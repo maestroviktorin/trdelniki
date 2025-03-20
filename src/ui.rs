@@ -1,4 +1,4 @@
-use crate::image_processing;
+use crate::image_processing::HandleRgbaComponents;
 
 use iced::{
     Element, Task, Theme,
@@ -13,11 +13,14 @@ use rfd::FileDialog;
 use std::path::PathBuf;
 
 pub static WINDOW_WIDTH: f32 = 1000.0;
-pub static WINDOW_HEIGHT: f32 = 600.0;
+pub static WINDOW_HEIGHT: f32 = 650.0;
+static _VIEWER_WIDTH: f32 = 800.0;
+static VIEWER_HEIGHT: f32 = 600.0;
 
 #[derive(Debug, Default)]
 pub struct UIState {
-    image: String,
+    image_path: PathBuf,
+    handle_rgba_components: HandleRgbaComponents,
 }
 
 #[derive(Debug, Clone)]
@@ -29,26 +32,25 @@ impl UIState {
     pub fn update(&mut self, message: Message) -> Task<Message> {
         match message {
             Message::UploadImage => {
-                self.image = FileDialog::new()
+                self.image_path = FileDialog::new()
                     .add_filter("image", &["png", "jpg", "jpeg"])
                     .pick_file()
-                    .unwrap()
-                    .as_os_str()
-                    .to_owned()
-                    .into_string()
-                    .unwrap();
+                    .unwrap_or_default();
+                self.handle_rgba_components =
+                    HandleRgbaComponents::rgb_to_greyscale(self.image_path.clone().into());
+
                 Task::none()
             }
         }
     }
 
     pub fn view(&self) -> Element<Message> {
-        println!("Path in view {:?}", self.image);
+        println!("Path in view {:?}", self.image_path);
 
         column!(
             text("Trdelniki").size(21).width(WINDOW_WIDTH).center(),
-            self._test_image(iced_image::FilterMethod::Linear),
-            text(format!("{:#?}", self.image)),
+            self.greyscale_image(iced_image::FilterMethod::Nearest),
+            text(format!("{:#?}", self.image_path)),
             button(text("Upload File")).on_press(Message::UploadImage)
         )
         .spacing(10)
@@ -60,31 +62,22 @@ impl UIState {
         Theme::GruvboxLight
     }
 
-    fn _test_image<'a>(&self, _filter_method: iced_image::FilterMethod) -> Container<'a, Message> {
-        // All the bytes go well until there.
-        let (w, h, pixels) = image_processing::rgb_to_grayscale(PathBuf::from(self.image.clone()));
-
-        //println!("{:?}", img_bytes);
-
-        // Then bytes got broken right here.
-        let handle = Handle::from_rgba(w, h, pixels);
+    fn greyscale_image<'a>(
+        &self,
+        filter_method: iced_image::FilterMethod,
+    ) -> Container<'a, Message> {
+        let handle = Handle::from_rgba(
+            self.handle_rgba_components.width,
+            self.handle_rgba_components.height,
+            self.handle_rgba_components.pixels.clone(),
+        );
         println!("Handle {:#?}", handle);
 
-        let img = iced::widget::image(handle);
+        let img = iced::widget::image::viewer(handle)
+            .width(WINDOW_WIDTH)
+            .height(VIEWER_HEIGHT)
+            .filter_method(filter_method);
 
         center(img).style(container::bordered_box)
     }
-
-    // fn _selected_image<'a>(
-    //     &self,
-    //     filter_method: iced_image::FilterMethod,
-    // ) -> Container<'a, Message> {
-    //     center(
-    //         iced::widget::image(Handle::from_bytes(image_processing::rgb_to_grayscale(
-    //             PathBuf::from(self.image.clone()),
-    //         )))
-    //         .filter_method(filter_method),
-    //     )
-    //     .style(container::bordered_box)
-    // }
 }
