@@ -42,11 +42,13 @@ impl UIState {
                     .unwrap_or_default();
                 self.handle_rgba_components =
                     HandleRgbaComponents::from_rgb_to_greyscale(self.image_path.clone().into());
-                self.handle_rgba_components = HandleRgbaComponents::greyscale_to_brightness_slice(
-                    &self.handle_rgba_components,
-                    self.min_brightness.parse().unwrap_or(0),
-                    self.max_brightness.parse().unwrap_or(255),
-                );
+                // self.handle_rgba_components = HandleRgbaComponents::greyscale_to_brightness_slice(
+                //     &self.handle_rgba_components,
+                //     self.min_brightness.parse().unwrap_or(0),
+                //     self.max_brightness.parse().unwrap_or(255),
+                // );
+                self.handle_rgba_components =
+                    HandleRgbaComponents::prewitt_filtered(&self.handle_rgba_components);
 
                 Task::none()
             }
