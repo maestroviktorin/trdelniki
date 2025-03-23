@@ -2,6 +2,7 @@ use iced::{Font, Settings, window};
 
 mod image_processing;
 mod ui;
+mod hough;
 
 use ui::*;
 

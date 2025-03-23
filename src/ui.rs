@@ -1,3 +1,4 @@
+use crate::hough::*;
 use crate::image_processing::HandleRgbaComponents;
 
 use iced::{
@@ -30,6 +31,7 @@ pub enum Message {
     UploadImage,
     MinBrightnessChange(String),
     MaxBrightnessChange(String),
+    Hough,
 }
 
 impl UIState {
@@ -51,6 +53,29 @@ impl UIState {
             }
             Message::MaxBrightnessChange(text) => {
                 self.max_brightness = text;
+
+                Task::none()
+            }
+            Message::Hough => {
+                let handle = HandleRgbaComponents::from_rgb_to_greyscale(self.image_path.clone());
+
+                // Perform Hough transform with parameters:
+                // - 90 theta steps (2° resolution)
+                // - 300 rho steps
+                // - Edge threshold = 80 (more conservative)
+                let (_, segments) = handle.hough_transform(90, 300, 80);
+
+                // Draw detected lines in red
+                // let vectorized = handle.draw_segments(&segments, [255, 255, 0, 255]);
+
+                // Save result
+                let _ = image::RgbaImage::from_raw(
+                    handle.width,
+                    handle.height,
+                    handle.pixels.to_vec(),
+                )
+                .unwrap()
+                .save("output.png");
 
                 Task::none()
             }
@@ -84,6 +109,7 @@ impl UIState {
                 )
                 .on_input(Message::MaxBrightnessChange)
             ],
+            button("Hough").on_press(Message::Hough),
         ]
         .spacing(10)
         .padding(5)
