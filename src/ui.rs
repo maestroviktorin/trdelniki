@@ -57,25 +57,18 @@ impl UIState {
                 Task::none()
             }
             Message::Hough => {
-                let handle = HandleRgbaComponents::from_rgb_to_greyscale(self.image_path.clone());
+                let path = std::path::PathBuf::from(self.image_path.clone());
+                let handle = HandleRgbaComponents::from_rgb_to_greyscale(path);
 
-                // Perform Hough transform with parameters:
-                // - 90 theta steps (2° resolution)
-                // - 300 rho steps
-                // - Edge threshold = 80 (more conservative)
-                let (_, segments) = handle.hough_transform(90, 300, 80);
+                // Perform Hough transform
+                let theta_scale = 100; // Higher theta resolution
+                let rho_scale = 10;
+                let accumulator = handle.hough_transform(theta_scale, rho_scale);
 
-                // Draw detected lines in red
-                // let vectorized = handle.draw_segments(&segments, [255, 255, 0, 255]);
-
-                // Save result
-                let _ = image::RgbaImage::from_raw(
-                    handle.width,
-                    handle.height,
-                    handle.pixels.to_vec(),
-                )
-                .unwrap()
-                .save("output.png");
+                // Visualize detected lines
+                let threshold = 200; // Adjust based on your needs
+                let line_image = handle.visualize_lines(&accumulator, theta_scale, threshold);
+                line_image.save("detected_lines.png").unwrap();
 
                 Task::none()
             }
@@ -95,7 +88,7 @@ impl UIState {
                 self.element_image_brightness_slice_keep_bg(),
                 self.element_image_prewitt_filtered()
             ],
-            button(text("Upload File")).on_press(Message::UploadImage),
+            button(text("Выбрать файл")).on_press(Message::UploadImage),
             text("Параметры яркостного среза:"),
             row![
                 text_input(
@@ -109,7 +102,7 @@ impl UIState {
                 )
                 .on_input(Message::MaxBrightnessChange)
             ],
-            button("Hough").on_press(Message::Hough),
+            button("Преобразование Хафа").on_press(Message::Hough),
         ]
         .spacing(10)
         .padding(5)
