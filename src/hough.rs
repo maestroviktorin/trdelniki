@@ -63,7 +63,7 @@ impl HandleRgbaComponents {
     ) -> ImageBuffer<Rgb<u8>, Vec<u8>> {
         let max_line_length = self.calculate_max_line_length();
         let theta_axis_size = theta_scale * 180;
-        let rho_axis_size = (max_line_length.ceil() as u32) * 1; // Assuming rho_scale=1 for simplicity
+        let rho_axis_size = (max_line_length.ceil() as u32) * 1; // Мультипликатор ρ предполагается равным 1.
         let rho_axis_half = rho_axis_size as f64 / 2.0;
 
         let mut output_img = ImageBuffer::from_fn(self.width, self.height, |x, y| {

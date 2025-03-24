@@ -60,15 +60,13 @@ impl UIState {
                 let path = std::path::PathBuf::from(self.image_path.clone());
                 let handle = HandleRgbaComponents::from_rgb_to_greyscale(path);
 
-                // Perform Hough transform
-                let theta_scale = 100; // Higher theta resolution
+                let theta_scale = 100;
                 let rho_scale = 10;
                 let accumulator = handle.hough_transform(theta_scale, rho_scale);
 
-                // Visualize detected lines
-                let threshold = 200; // Adjust based on your needs
+                let threshold = 200;
                 let line_image = handle.visualize_lines(&accumulator, theta_scale, threshold);
-                line_image.save("detected_lines.png").unwrap();
+                line_image.save("vectorized.png").unwrap();
 
                 Task::none()
             }
