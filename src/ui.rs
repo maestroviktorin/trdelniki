@@ -1,4 +1,3 @@
-use crate::hough::*;
 use crate::image_processing::HandleRgbaComponents;
 
 use iced::{
@@ -146,7 +145,7 @@ impl UIState {
         .into()
     }
 
-    fn image_greyscale<'a>(&self, filter_method: iced_image::FilterMethod) -> Viewer<Handle> {
+    fn image_greyscale(&self, filter_method: iced_image::FilterMethod) -> Viewer<Handle> {
         let handle = Handle::from_rgba(
             self.handle_rgba_components.width,
             self.handle_rgba_components.height,
@@ -162,7 +161,7 @@ impl UIState {
         img
     }
 
-    fn image_brightness_slice_keep_bg<'a>(
+    fn image_brightness_slice_keep_bg(
         &self,
         filter_method: iced_image::FilterMethod,
     ) -> Viewer<Handle> {
@@ -187,10 +186,7 @@ impl UIState {
         img
     }
 
-    fn image_prewitt_filtered<'a>(
-        &self,
-        filter_method: iced_image::FilterMethod,
-    ) -> Viewer<Handle> {
+    fn image_prewitt_filtered(&self, filter_method: iced_image::FilterMethod) -> Viewer<Handle> {
         let handle = Handle::from_rgba(
             self.handle_rgba_components.width,
             self.handle_rgba_components.height,
